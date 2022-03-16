@@ -4,7 +4,11 @@ import com.kakao.cafe.domain.Article;
 import org.springframework.context.annotation.Primary;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
@@ -25,11 +29,15 @@ public class ArticleJdbcRepository implements ArticleRepository{
     public Article save(Article article) {
         String sql = "INSERT INTO article (writer, title, contents, created_time, updated_time) " +
                 "VALUES (:writer, :title, :contents, :created_time, :updated_time)";
+        KeyHolder keyHolder = new GeneratedKeyHolder();
 
-        namedParameterJdbcTemplate.update(sql, generateParams(article));
+        namedParameterJdbcTemplate.update(sql,
+                new MapSqlParameterSource().addValues(generateParams(article)),
+                keyHolder);
 
-        return findByWriterAndTitle(article.getWriter(), article.getTitle()).stream()
-                .findAny().orElse(article);
+        long saveId = keyHolder.getKey().longValue();
+
+        return findById(saveId).orElse(article);
     }
 
     private Map<String, Object> generateParams(Article article) {
@@ -66,19 +74,6 @@ public class ArticleJdbcRepository implements ArticleRepository{
                 "SELECT id, writer, title, contents, created_time, updated_time " +
                         "FROM article",
                 Collections.emptyMap(),
-                articleRowMapper());
-    }
-
-    private List<Article> findByWriterAndTitle(String writer, String title) {
-        Map<String, Object> params = new HashMap<>();
-        params.put("writer", writer);
-        params.put("title", title);
-
-        return namedParameterJdbcTemplate.query(
-                "SELECT id, writer, title, contents, created_time, updated_time " +
-                    "FROM article " +
-                    "WHERE writer = :writer AND title = :title ",
-                params,
                 articleRowMapper());
     }
 
