@@ -1,5 +1,6 @@
 package com.kakao.cafe.service;
 
+import com.kakao.cafe.Controller.dto.LoginForm;
 import com.kakao.cafe.Controller.dto.UserDto;
 import com.kakao.cafe.Controller.dto.UserRequestDto;
 import com.kakao.cafe.domain.User;
@@ -9,6 +10,7 @@ import com.kakao.cafe.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -71,5 +73,16 @@ public class UserService {
         User findUser = findByUserId(userId);
 
         return UserDto.from(findUser);
+    }
+
+    public boolean isLoginSuccess(LoginForm loginForm) {
+        User findUser = findByUserId(loginForm.getUserId());
+
+        // throw를 던질 수 있도록 코딩
+        if (!findUser.isCorrectPassword(loginForm.getPassword())) {
+            throw new
+        }
+
+       return ;
     }
 }

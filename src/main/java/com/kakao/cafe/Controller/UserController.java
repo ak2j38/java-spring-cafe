@@ -1,5 +1,6 @@
 package com.kakao.cafe.Controller;
 
+import com.kakao.cafe.Controller.dto.LoginForm;
 import com.kakao.cafe.Controller.dto.UserRequestDto;
 import com.kakao.cafe.Controller.dto.UserDto;
 import com.kakao.cafe.service.UserService;
@@ -7,8 +8,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import java.util.List;
 
 @Controller
@@ -72,4 +76,26 @@ public class UserController {
 
         return "redirect:/users";
     }
+
+    @GetMapping("/users/login")
+    public String loginForm(Model model) {
+        model.addAttribute("loginForm", new LoginForm());
+
+        return "user/login";
+    }
+
+    @PostMapping("/users/login")
+    public String login(LoginForm loginForm, Errors errors, HttpServletRequest request) {
+        if (errors.hasErrors()) {
+            return "user/login";
+        }
+
+        if (userService.isLoginSuccess(loginForm)) {
+            HttpSession session = request.getSession();
+            session.setAttribute("loginInfo", loginForm);
+
+        }
+
+    }
+
 }
